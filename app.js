@@ -39,8 +39,39 @@ function usable(it) {
 
 // TODO (ฝั่งหลังบ้าน): ส่งไฟล์รูปไปให้ AI อ่าน แล้วคืนรายชื่อวัตถุดิบ
 // ตัวอย่างค่าที่คืน: ["ไข่", "ต้นหอม"]
+function fileToBase64(file, maxSize = 1024) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.8).split(",")[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("อ่านไฟล์รูปไม่ได้")); };
+    img.src = url;
+  });
+}
+
+// คืน null ถ้าเรียก AI ไม่สำเร็จ, คืน [] ถ้า AI ไม่พบวัตถุดิบ
 async function detectIngredients(file) {
-  return [];
+  try {
+    $("photoNote").textContent = "กำลังให้ AI อ่านรูป...";
+    const image = await fileToBase64(file);
+    const { data, error } = await db.functions.invoke("detect-ingredients", {
+      body: { image, mime: "image/jpeg" }
+    });
+    if (error) throw error;
+    return Array.isArray(data.ingredients) ? data.ingredients : [];
+  } catch (e) {
+    return null;
+  }
+}
+
 }
 
 // ---------- ล็อกอิน ----------
