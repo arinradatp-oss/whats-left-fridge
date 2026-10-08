@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What's Left in My Fridge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🧊 ตู้เย็นของฉัน</h1>
+
+  <div class="panel">
+    <label class="field" for="name">ชื่อวัตถุดิบ</label>
+    <input id="name" placeholder="เช่น ไข่">
+    <label class="field" for="qty">จำนวน</label>
+    <input id="qty" placeholder="เช่น 3 ฟอง">
+    <label class="field" for="exp">วันหมดอายุ</label>
+    <input id="exp" type="date">
+    <button id="add">เพิ่มของ</button>
+  </div>
+
+  <h2>เพิ่มจากรูปถ่าย</h2>
+  <div class="panel">
+    <label class="filebtn" for="photo">📷 ถ่ายรูป / เลือกรูป</label>
+    <input id="photo" type="file" accept="image/*" style="display:none">
+    <img id="preview" alt="ตัวอย่างรูป" style="display:none">
+    <div id="photoForm" style="display:none">
+      <p id="photoNote" class="tag"></p>
+      <label class="field" for="photoNames">ชื่อวัตถุดิบในรูป (คั่นด้วยจุลภาค)</label>
+      <input id="photoNames" placeholder="เช่น ไข่, ต้นหอม">
+      <label class="field" for="photoExp">วันหมดอายุ</label>
+      <input id="photoExp" type="date">
+      <button id="photoAdd">เพิ่มทั้งหมดเข้าตู้เย็น</button>
+    </div>
+  </div>
+
+  <ul id="list"></ul>
+
+  <h2>เมนูแนะนำ</h2>
+  <div class="modebar">
+    <button id="modeBtn" class="secondary">โหมดจับคู่แปลกๆ: ปิด</button>
+    <button id="shuffleBtn" class="secondary" style="display:none">สุ่มใหม่</button>
+  </div>
+  <div id="recipes"></div>
+  <div id="odd" style="display:none"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
