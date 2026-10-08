@@ -327,3 +327,28 @@ $("photoAdd").onclick = async () => {
 };
 
 render();
+// ฟังก์ชันวิเคราะห์รูปภาพด้วย Gemini ผ่าน Supabase Edge Function
+async function detectIngredientsFromImage(base64Image) {
+  const FUNCTION_URL = 'https://zoicubzrvdaypqznhxic.supabase.co/functions/v1/detect-ingredients';
+  
+  try {
+    const response = await fetch(FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify({ imageBase64: base64Image })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+
+    console.log('ตรวจพบวัตถุดิบ:', data.ingredients);
+    return data.ingredients || [];
+  } catch (error) {
+    console.error('Error detecting ingredients:', error);
+    alert('ไม่สามารถวิเคราะห์รูปภาพได้ กรุณาลองใหม่อีกครั้ง');
+    return [];
+  }
+}
