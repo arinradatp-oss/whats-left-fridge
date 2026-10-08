@@ -118,3 +118,24 @@ button.on { background: var(--terracotta); color: #fff; }
 }
 .odd { background: #fff4d6; border-color: var(--mustard); }
 .pair { font-size: 18px; margin-bottom: 6px; }
+.row { display: flex; gap: 10px; }
+.row > div { flex: 1; min-width: 0; }
+.msg { font-size: 14px; color: var(--leaf); margin: 8px 0 0; }
+.msg.error { color: var(--terracotta); }
+.btnrow { display: flex; gap: 8px; }
+.userbar {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.userbar button { padding: 6px 12px; font-size: 14px; }
+#list li { align-items: center; gap: 8px; }
+#list .itemname { flex: 1; }
+#list .del { padding: 4px 10px; font-size: 13px; background: #f0e4cc; }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--muted); }
+.steps { white-space: pre-line; margin-top: 6px; font-size: 15px; }
