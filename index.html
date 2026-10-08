@@ -11,40 +11,69 @@
 <body>
   <h1>🧊 ตู้เย็นของฉัน</h1>
 
-  <div class="panel">
-    <label class="field" for="name">ชื่อวัตถุดิบ</label>
-    <input id="name" placeholder="เช่น ไข่">
-    <label class="field" for="qty">จำนวน</label>
-    <input id="qty" placeholder="เช่น 3 ฟอง">
-    <label class="field" for="exp">วันหมดอายุ</label>
-    <input id="exp" type="date">
-    <button id="add">เพิ่มของ</button>
-  </div>
-
-  <h2>เพิ่มจากรูปถ่าย</h2>
-  <div class="panel">
-    <label class="filebtn" for="photo">📷 ถ่ายรูป / เลือกรูป</label>
-    <input id="photo" type="file" accept="image/*" style="display:none">
-    <img id="preview" alt="ตัวอย่างรูป" style="display:none">
-    <div id="photoForm" style="display:none">
-      <p id="photoNote" class="tag"></p>
-      <label class="field" for="photoNames">ชื่อวัตถุดิบในรูป (คั่นด้วยจุลภาค)</label>
-      <input id="photoNames" placeholder="เช่น ไข่, ต้นหอม">
-      <label class="field" for="photoExp">วันหมดอายุ</label>
-      <input id="photoExp" type="date">
-      <button id="photoAdd">เพิ่มทั้งหมดเข้าตู้เย็น</button>
+  <div id="authBox" class="panel">
+    <label class="field" for="email">อีเมล</label>
+    <input id="email" type="email" placeholder="you@example.com">
+    <label class="field" for="password">รหัสผ่าน (อย่างน้อย 6 ตัว)</label>
+    <input id="password" type="password">
+    <div class="btnrow">
+      <button id="loginBtn">เข้าสู่ระบบ</button>
+      <button id="signupBtn" class="secondary">สมัครสมาชิก</button>
     </div>
+    <p id="authMsg" class="msg"></p>
   </div>
 
-  <ul id="list"></ul>
-
-  <h2>เมนูแนะนำ</h2>
-  <div class="modebar">
-    <button id="modeBtn" class="secondary">โหมดจับคู่แปลกๆ: ปิด</button>
-    <button id="shuffleBtn" class="secondary" style="display:none">สุ่มใหม่</button>
+  <div id="userbar" class="userbar">
+    <span id="userEmail"></span>
+    <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
   </div>
-  <div id="recipes"></div>
-  <div id="odd" style="display:none"></div>
+
+  <div id="app" style="display:none">
+    <p id="appMsg" class="msg"></p>
+
+    <div class="panel">
+      <label class="field" for="name">ชื่อวัตถุดิบ</label>
+      <input id="name" placeholder="เช่น ไข่">
+      <div class="row">
+        <div>
+          <label class="field" for="qty">จำนวน</label>
+          <input id="qty" type="number" inputmode="decimal" min="0" step="any" placeholder="เช่น 3">
+        </div>
+        <div>
+          <label class="field" for="unit">หน่วย</label>
+          <input id="unit" placeholder="เช่น ฟอง">
+        </div>
+      </div>
+      <label class="field" for="exp">วันหมดอายุ</label>
+      <input id="exp" type="date">
+      <button id="add">เพิ่มของ</button>
+    </div>
+
+    <h2>เพิ่มจากรูปถ่าย</h2>
+    <div class="panel">
+      <label class="filebtn" for="photo">📷 ถ่ายรูป / เลือกรูป</label>
+      <input id="photo" type="file" accept="image/*" style="display:none">
+      <img id="preview" alt="ตัวอย่างรูป" style="display:none">
+      <div id="photoForm" style="display:none">
+        <p id="photoNote" class="tag"></p>
+        <label class="field" for="photoNames">ชื่อวัตถุดิบในรูป (คั่นด้วยจุลภาค)</label>
+        <input id="photoNames" placeholder="เช่น ไข่, ต้นหอม">
+        <label class="field" for="photoExp">วันหมดอายุ</label>
+        <input id="photoExp" type="date">
+        <button id="photoAdd">เพิ่มทั้งหมดเข้าตู้เย็น</button>
+      </div>
+    </div>
+
+    <ul id="list"></ul>
+
+    <h2>เมนูแนะนำ</h2>
+    <div class="modebar">
+      <button id="modeBtn" class="secondary">โหมดจับคู่แปลกๆ: ปิด</button>
+      <button id="shuffleBtn" class="secondary" style="display:none">สุ่มใหม่</button>
+    </div>
+    <div id="recipes"></div>
+    <div id="odd" style="display:none"></div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
