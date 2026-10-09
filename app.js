@@ -37,8 +37,10 @@ function usable(it) {
   return left === null || left >= 0;
 }
 
-// TODO (ฝั่งหลังบ้าน): ส่งไฟล์รูปไปให้ AI อ่าน แล้วคืนรายชื่อวัตถุดิบ
-// ตัวอย่างค่าที่คืน: ["ไข่", "ต้นหอม"]
+// ---------- อ่านรูปด้วย AI (เรียกฟังก์ชันหลังบ้านของเพื่อน) ----------
+// สมมติฐาน: ฟังก์ชันชื่อ "detect-ingredients"
+// รับ { image: base64, mime: "image/jpeg" } และตอบ { ingredients: ["ไข่", ...] }
+// ถ้าเพื่อนตั้งชื่อหรือรูปแบบต่างจากนี้ แก้เฉพาะในฟังก์ชัน detectIngredients
 function fileToBase64(file, maxSize = 1024) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -70,8 +72,6 @@ async function detectIngredients(file) {
   } catch (e) {
     return null;
   }
-}
-
 }
 
 // ---------- ล็อกอิน ----------
@@ -335,13 +335,18 @@ photoInput.onchange = async () => {
   preview.dataset.url = url;
   preview.style.display = "block";
   $("photoForm").style.display = "block";
+  $("photoNames").value = "";
   $("photoExp").value = inDays(5);
 
   const names = await detectIngredients(file);
-  $("photoNames").value = names.join(", ");
-  $("photoNote").textContent = names.length
-    ? "อ่านจากรูปได้ตามนี้ แก้ไขได้ก่อนกดเพิ่ม"
-    : "ยังไม่ได้เชื่อมการอ่านรูปด้วย AI กรุณาพิมพ์ชื่อวัตถุดิบที่เห็นในรูปเอง";
+  if (names === null) {
+    $("photoNote").textContent = "อ่านรูปด้วย AI ไม่สำเร็จ กรุณาพิมพ์ชื่อวัตถุดิบที่เห็นในรูปเอง";
+  } else if (names.length === 0) {
+    $("photoNote").textContent = "AI ไม่พบวัตถุดิบในรูป ลองถ่ายใหม่หรือพิมพ์เอง";
+  } else {
+    $("photoNames").value = names.join(", ");
+    $("photoNote").textContent = "AI อ่านได้ตามนี้ แก้ไขได้ก่อนกดเพิ่ม";
+  }
 };
 
 $("photoAdd").onclick = async () => {
@@ -358,28 +363,3 @@ $("photoAdd").onclick = async () => {
 };
 
 render();
-// ฟังก์ชันวิเคราะห์รูปภาพด้วย Gemini ผ่าน Supabase Edge Function
-async function detectIngredientsFromImage(base64Image) {
-  const FUNCTION_URL = 'https://zoicubzrvdaypqznhxic.supabase.co/functions/v1/detect-ingredients';
-  
-  try {
-    const response = await fetch(FUNCTION_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      },
-      body: JSON.stringify({ imageBase64: base64Image })
-    });
-
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-
-    console.log('ตรวจพบวัตถุดิบ:', data.ingredients);
-    return data.ingredients || [];
-  } catch (error) {
-    console.error('Error detecting ingredients:', error);
-    alert('ไม่สามารถวิเคราะห์รูปภาพได้ กรุณาลองใหม่อีกครั้ง');
-    return [];
-  }
-}
