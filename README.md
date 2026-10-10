@@ -18,7 +18,7 @@
 - ฐานข้อมูลและระบบล็อกอิน: Supabase (Auth, Postgres, Row Level Security)
 - เก็บโค้ด: GitHub
 - เผยแพร่เว็บ: Vercel (deploy อัตโนมัติทุกครั้งที่ commit)
-- ผู้ช่วย AI: Claude
+- ผู้ช่วย AI: Claude,Gemini
 
 ## ฐานข้อมูล
 - fridge_items: ของในตู้เย็นของผู้ใช้แต่ละคน มี policy ให้เข้าถึงได้เฉพาะเจ้าของข้อมูลที่ล็อกอินแล้ว
