@@ -8,7 +8,6 @@ let items = [];
 let recipes = [];
 let currentUser = null;
 let oddMode = false;
-let lastAiError = "";
 
 const oddMenus = [
   { title: "{a}{b}ทอดกรอบ", tip: "ชุบแป้งทอดให้กรอบ จิ้มซอสพริก" },
@@ -23,11 +22,6 @@ function setMsg(el, text, isError) {
   el.className = isError ? "msg error" : "msg";
 }
 
-function inDays(n) {
-  const d = new Date(); d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
 function daysLeft(d) {
   if (!d) return null;
   return Math.ceil((new Date(d) - new Date()) / 86400000);
@@ -36,52 +30,6 @@ function daysLeft(d) {
 function usable(it) {
   const left = daysLeft(it.expiry_date);
   return left === null || left >= 0;
-}
-
-// ---------- อ่านรูปด้วย AI (Supabase Edge Function: detect-ingredients) ----------
-// ส่ง { imageBase64 } และรับ { ingredients: ["ไข่", ...] }
-function fileToBase64(file, maxSize = 1024) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.8).split(",")[1]);
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("อ่านไฟล์รูปไม่ได้")); };
-    img.src = url;
-  });
-}
-
-// คืน null ถ้าเรียก AI ไม่สำเร็จ (สาเหตุอยู่ใน lastAiError), คืน [] ถ้า AI ไม่พบวัตถุดิบ
-async function detectIngredients(file) {
-  try {
-    lastAiError = "";
-    $("photoNote").textContent = "กำลังให้ AI อ่านรูป...";
-    const imageBase64 = await fileToBase64(file);
-    const { data, error } = await db.functions.invoke("detect-ingredients", {
-      body: { imageBase64, mime: "image/jpeg" }
-    });
-    if (error) throw error;
-    if (data && data.error) throw new Error(data.error);
-    return Array.isArray(data.ingredients) ? data.ingredients : [];
-  } catch (e) {
-    lastAiError = (e && e.message) ? e.message : String(e);
-    if (e && e.context && e.context.status) lastAiError += " [HTTP " + e.context.status + "]";
-    if (e && e.context && typeof e.context.json === "function") {
-      try {
-        const j = await e.context.json();
-        lastAiError += " | " + (j.error || j.message || JSON.stringify(j));
-      } catch (_) {}
-    }
-    console.error("detectIngredients:", e);
-    return null;
-  }
 }
 
 // ---------- ล็อกอิน ----------
@@ -331,45 +279,5 @@ $("modeBtn").onclick = () => {
 };
 
 $("shuffleBtn").onclick = renderOdd;
-
-// ---------- เพิ่มจากรูปถ่าย ----------
-const photoInput = $("photo");
-const preview = $("preview");
-
-photoInput.onchange = async () => {
-  const file = photoInput.files[0];
-  if (!file) return;
-  if (preview.dataset.url) URL.revokeObjectURL(preview.dataset.url);
-  const url = URL.createObjectURL(file);
-  preview.src = url;
-  preview.dataset.url = url;
-  preview.style.display = "block";
-  $("photoForm").style.display = "block";
-  $("photoNames").value = "";
-  $("photoExp").value = inDays(5);
-
-  const names = await detectIngredients(file);
-  if (names === null) {
-    $("photoNote").textContent = "อ่านรูปด้วย AI ไม่สำเร็จ (" + lastAiError + ") กรุณาพิมพ์ชื่อวัตถุดิบที่เห็นในรูปเอง";
-  } else if (names.length === 0) {
-    $("photoNote").textContent = "AI ไม่พบวัตถุดิบในรูป ลองถ่ายใหม่หรือพิมพ์เอง";
-  } else {
-    $("photoNames").value = names.join(", ");
-    $("photoNote").textContent = "AI อ่านได้ตามนี้ แก้ไขได้ก่อนกดเพิ่ม";
-  }
-};
-
-$("photoAdd").onclick = async () => {
-  const exp = $("photoExp").value;
-  const names = $("photoNames").value.split(",").map(s => s.trim()).filter(Boolean);
-  if (!names.length || !exp) return;
-  const ok = await addItems(names.map(n => ({ name: n, qty: 1, unit: "ชิ้น", expiry_date: exp })));
-  if (ok) {
-    $("photoNames").value = "";
-    $("photoForm").style.display = "none";
-    preview.style.display = "none";
-    photoInput.value = "";
-  }
-};
 
 render();
