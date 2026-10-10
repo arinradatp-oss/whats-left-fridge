@@ -37,10 +37,8 @@ function usable(it) {
   return left === null || left >= 0;
 }
 
-// ---------- อ่านรูปด้วย AI (เรียกฟังก์ชันหลังบ้านของเพื่อน) ----------
-// สมมติฐาน: ฟังก์ชันชื่อ "detect-ingredients"
-// รับ { image: base64, mime: "image/jpeg" } และตอบ { ingredients: ["ไข่", ...] }
-// ถ้าเพื่อนตั้งชื่อหรือรูปแบบต่างจากนี้ แก้เฉพาะในฟังก์ชัน detectIngredients
+// ---------- อ่านรูปด้วย AI (Supabase Edge Function: detect-ingredients) ----------
+// ส่ง { imageBase64 } และรับ { ingredients: ["ไข่", ...] }
 function fileToBase64(file, maxSize = 1024) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -63,13 +61,15 @@ function fileToBase64(file, maxSize = 1024) {
 async function detectIngredients(file) {
   try {
     $("photoNote").textContent = "กำลังให้ AI อ่านรูป...";
-    const image = await fileToBase64(file);
+    const imageBase64 = await fileToBase64(file);
     const { data, error } = await db.functions.invoke("detect-ingredients", {
-      body: { image, mime: "image/jpeg" }
+      body: { imageBase64, mime: "image/jpeg" }
     });
     if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
     return Array.isArray(data.ingredients) ? data.ingredients : [];
   } catch (e) {
+    console.error("detectIngredients:", e);
     return null;
   }
 }
