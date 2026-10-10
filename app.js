@@ -8,6 +8,7 @@ let items = [];
 let recipes = [];
 let currentUser = null;
 let oddMode = false;
+let lastAiError = "";
 
 const oddMenus = [
   { title: "{a}{b}ทอดกรอบ", tip: "ชุบแป้งทอดให้กรอบ จิ้มซอสพริก" },
@@ -57,9 +58,10 @@ function fileToBase64(file, maxSize = 1024) {
   });
 }
 
-// คืน null ถ้าเรียก AI ไม่สำเร็จ, คืน [] ถ้า AI ไม่พบวัตถุดิบ
+// คืน null ถ้าเรียก AI ไม่สำเร็จ (สาเหตุอยู่ใน lastAiError), คืน [] ถ้า AI ไม่พบวัตถุดิบ
 async function detectIngredients(file) {
   try {
+    lastAiError = "";
     $("photoNote").textContent = "กำลังให้ AI อ่านรูป...";
     const imageBase64 = await fileToBase64(file);
     const { data, error } = await db.functions.invoke("detect-ingredients", {
@@ -69,6 +71,14 @@ async function detectIngredients(file) {
     if (data && data.error) throw new Error(data.error);
     return Array.isArray(data.ingredients) ? data.ingredients : [];
   } catch (e) {
+    lastAiError = (e && e.message) ? e.message : String(e);
+    if (e && e.context && e.context.status) lastAiError += " [HTTP " + e.context.status + "]";
+    if (e && e.context && typeof e.context.json === "function") {
+      try {
+        const j = await e.context.json();
+        lastAiError += " | " + (j.error || j.message || JSON.stringify(j));
+      } catch (_) {}
+    }
     console.error("detectIngredients:", e);
     return null;
   }
@@ -340,7 +350,7 @@ photoInput.onchange = async () => {
 
   const names = await detectIngredients(file);
   if (names === null) {
-    $("photoNote").textContent = "อ่านรูปด้วย AI ไม่สำเร็จ กรุณาพิมพ์ชื่อวัตถุดิบที่เห็นในรูปเอง";
+    $("photoNote").textContent = "อ่านรูปด้วย AI ไม่สำเร็จ (" + lastAiError + ") กรุณาพิมพ์ชื่อวัตถุดิบที่เห็นในรูปเอง";
   } else if (names.length === 0) {
     $("photoNote").textContent = "AI ไม่พบวัตถุดิบในรูป ลองถ่ายใหม่หรือพิมพ์เอง";
   } else {
